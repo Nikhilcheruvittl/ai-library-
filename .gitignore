@@ -13,6 +13,8 @@ frontend/.env.production.local
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
 
 # Python / Backend
 __pycache__/
@@ -20,6 +22,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.venv/
 backend/venv/
 backend/env/
 backend/ENV/

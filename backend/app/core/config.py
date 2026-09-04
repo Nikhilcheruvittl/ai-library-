@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://postgres:postgrespassword@localhost:5432/ai_library_db"
+        "postgresql://postgres:postgrespassword@localhost:5433/ai_library_db"
     )
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
