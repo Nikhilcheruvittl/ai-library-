@@ -1,4 +1,4 @@
-import { Search, Sparkles, BookOpen } from 'lucide-react';
+import { Search, BookOpen, Library, Sparkles } from 'lucide-react';
 
 interface HeroSectionProps {
   searchQuery: string;
@@ -8,42 +8,51 @@ interface HeroSectionProps {
 
 export default function HeroSection({ searchQuery, onSearchChange, totalResults }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-indigo-950/40 to-slate-950 border border-slate-800/80 p-8 sm:p-12 mb-8">
-      {/* Subtle Background Glow */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#fffefb] to-[#f5efe4] border border-[#e6e0d4] p-8 sm:p-12 mb-8 shadow-sm">
+      {/* Decorative Warm Accent Background Shapes */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-[#006699]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
         
         {/* Subtitle Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-indigo-500/30 text-xs text-indigo-300 font-medium shadow-inner">
-          <BookOpen className="w-3.5 h-3.5 text-brand-400" />
-          <span>Catalog Explorer</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f0e9dc] border border-[#d8cebe] text-xs text-[#006699] font-medium shadow-xs">
+          <Library className="w-3.5 h-3.5 text-[#006699]" />
+          <span>Open Library Catalog</span>
         </div>
 
         {/* Hero Title */}
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-          Discover Your <span className="bg-gradient-to-r from-brand-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Next Book</span>
+        <h1 className="text-3xl sm:text-5xl font-bold font-serif-title text-[#1a2530] leading-tight tracking-tight">
+          Discover Your Next Book on <span className="text-[#006699]">OpenLibrary</span>
         </h1>
 
         {/* Hero Description */}
-        <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-          Explore a curated library spanning programming, cybersecurity, science fiction, history, philosophy, and more. Filter by genre, difficulty, or length.
+        <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-sans">
+          Explore our open digital catalog spanning programming, cybersecurity, science fiction, history, philosophy, and self-development.
         </p>
 
-        {/* Search Input Box */}
-        <div className="relative max-w-xl mx-auto pt-2">
-          <div className="relative flex items-center">
+        {/* Prominent Search Bar */}
+        <div className="relative max-w-2xl mx-auto pt-2">
+          <div className="relative flex items-center shadow-md rounded-xl overflow-hidden border border-[#d8cebe] focus-within:border-[#006699] focus-within:ring-2 focus-within:ring-[#006699]/20 transition-all bg-white">
             <Search className="absolute left-4 w-5 h-5 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search by title, author, or keyword..."
-              className="w-full pl-12 pr-28 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 shadow-xl transition-all"
+              placeholder="Search by title, author, topic, or keyword..."
+              className="w-full pl-12 pr-32 py-3.5 text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
             />
-            <div className="absolute right-3 px-3 py-1.5 rounded-xl bg-slate-800 text-xs text-slate-400 font-medium border border-slate-700/60">
-              {totalResults} {totalResults === 1 ? 'book' : 'books'}
+            <div className="absolute right-2 flex items-center gap-2">
+              <span className="hidden sm:inline-block px-2.5 py-1 rounded-md bg-[#f4ebd9] text-[11px] font-semibold text-slate-700 border border-[#e2d6c1]">
+                {totalResults} {totalResults === 1 ? 'book' : 'books'}
+              </span>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-lg bg-[#006699] hover:bg-[#005580] text-white text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Search</span>
+              </button>
             </div>
           </div>
         </div>
@@ -52,3 +61,4 @@ export default function HeroSection({ searchQuery, onSearchChange, totalResults 
     </section>
   );
 }
+

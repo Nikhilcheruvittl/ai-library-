@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AI Library',
-  description: 'AI Library Application Foundation',
+  title: 'OpenLibrary — Catalog Explorer',
+  description: 'Search and discover thousands of books in the OpenLibrary classic catalog.',
 };
 
 export default function RootLayout({
@@ -13,9 +13,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-100 min-h-screen">
+      <body className="bg-[#f8f5f0] text-slate-800 font-sans min-h-screen antialiased">
         {children}
       </body>
     </html>
   );
 }
+

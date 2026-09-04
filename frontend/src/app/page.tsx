@@ -6,6 +6,7 @@ import HeroSection from '@/components/HeroSection';
 import FilterSidebar, { FilterState } from '@/components/FilterSidebar';
 import BookGrid from '@/components/BookGrid';
 import { fetchBooks, fetchGenres, ApiBook, ApiGenre } from '@/lib/api';
+import { Library, BookMarked, Sparkles } from 'lucide-react';
 
 const INITIAL_FILTERS: FilterState = {
   genre: 'All',
@@ -82,8 +83,15 @@ export default function Home() {
     setFilters(INITIAL_FILTERS);
   };
 
+  const handleQuickGenreSelect = (selectedGenre: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      genre: prev.genre === selectedGenre ? 'All' : selectedGenre,
+    }));
+  };
+
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f8f5f0] text-slate-800 flex flex-col font-sans antialiased">
       
       {/* Header Navigation */}
       <Navbar />
@@ -91,12 +99,50 @@ export default function Home() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Hero Section with Live API Search Input */}
+        {/* Classic Library Hero Section with Live Search */}
         <HeroSection
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           totalResults={totalBooks}
         />
+
+        {/* Popular Subject Quick Bar */}
+        {genres.length > 0 && (
+          <div className="bg-white rounded-xl p-4 border border-[#e6e0d4] shadow-xs space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <BookMarked className="w-3.5 h-3.5 text-[#006699]" />
+              <span>Popular Subjects</span>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                onClick={() => handleQuickGenreSelect('All')}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  filters.genre === 'All'
+                    ? 'bg-[#006699] text-white border-[#005580]'
+                    : 'bg-[#faf8f5] text-slate-700 border-[#d8cebe] hover:border-slate-400'
+                }`}
+              >
+                All Subjects
+              </button>
+              {genres.slice(0, 8).map((g) => {
+                const isSelected = filters.genre === g;
+                return (
+                  <button
+                    key={g}
+                    onClick={() => handleQuickGenreSelect(g)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      isSelected
+                        ? 'bg-[#006699] text-white border-[#005580]'
+                        : 'bg-[#faf8f5] text-slate-700 border-[#d8cebe] hover:border-slate-400'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Catalog Grid Layout (Sidebar + Books Grid) */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
@@ -114,13 +160,16 @@ export default function Home() {
 
           {/* Book Cards Grid Area */}
           <div className="lg:col-span-3">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-800">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <span>Library Catalog</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-normal">
-                  {loading ? 'Loading...' : `Showing ${books.length} of ${totalBooks}`}
-                </span>
-              </h2>
+            <div className="flex items-center justify-between pb-3 mb-6 border-b border-[#e6e0d4]">
+              <div className="flex items-center gap-3">
+                <Library className="w-5 h-5 text-[#006699]" />
+                <h2 className="text-lg font-bold font-serif-title text-slate-900">
+                  Catalog Collection
+                </h2>
+              </div>
+              <span className="text-xs px-3 py-1 rounded-full bg-[#f0e9dc] text-slate-700 font-medium border border-[#d8cebe]">
+                {loading ? 'Searching catalog...' : `Showing ${books.length} of ${totalBooks} books`}
+              </span>
             </div>
 
             <BookGrid
@@ -137,12 +186,14 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/60 mt-16 py-8 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} AI Library Application — Phase 1 REST API Integration.</p>
+      <footer className="border-t border-[#e6e0d4] bg-[#fffdf9] mt-16 py-8 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 space-y-2">
+          <p className="font-serif-title font-semibold text-slate-700">OpenLibrary Catalog Explorer</p>
+          <p>© {new Date().getFullYear()} OpenLibrary — Classic Online Library Catalog Integration.</p>
         </div>
       </footer>
 
     </div>
   );
 }
+

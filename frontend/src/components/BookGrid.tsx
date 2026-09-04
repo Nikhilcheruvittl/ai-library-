@@ -1,6 +1,6 @@
 import { ApiBook } from '@/lib/api';
 import BookCard from './BookCard';
-import { BookX, AlertTriangle, Loader2 } from 'lucide-react';
+import { BookX, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface BookGridProps {
   books: ApiBook[];
@@ -22,14 +22,14 @@ export default function BookGrid({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="glass-card rounded-2xl h-80 animate-pulse p-5 flex flex-col justify-between space-y-4">
-            <div className="h-36 bg-slate-800/60 rounded-xl w-full" />
+          <div key={i} className="bg-white rounded-xl border border-[#e6e0d4] h-96 animate-pulse p-4 flex flex-col justify-between space-y-4 shadow-xs">
+            <div className="h-44 bg-[#f0e9dc] rounded-md w-full" />
             <div className="space-y-2">
-              <div className="h-4 bg-slate-800/60 rounded w-3/4" />
-              <div className="h-3 bg-slate-800/40 rounded w-1/2" />
-              <div className="h-3 bg-slate-800/40 rounded w-full" />
+              <div className="h-4 bg-[#f0e9dc] rounded w-3/4" />
+              <div className="h-3 bg-[#f5efe4] rounded w-1/2" />
+              <div className="h-3 bg-[#f5efe4] rounded w-full" />
             </div>
-            <div className="h-4 bg-slate-800/60 rounded w-1/3 pt-2" />
+            <div className="h-4 bg-[#f0e9dc] rounded w-1/3 pt-2" />
           </div>
         ))}
       </div>
@@ -39,20 +39,21 @@ export default function BookGrid({
   // User-Friendly Error State
   if (error) {
     return (
-      <div className="glass-panel rounded-2xl p-12 text-center space-y-4 border border-rose-500/20 bg-rose-950/10">
-        <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto text-rose-400">
+      <div className="bg-white rounded-2xl p-12 text-center space-y-4 border border-rose-200 bg-rose-50/20 shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center mx-auto text-rose-600">
           <AlertTriangle className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-bold text-white">API Service Unavailable</h3>
-        <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-          Unable to connect to the backend server ({error}). Ensure the FastAPI server is running on <code className="text-brand-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">http://localhost:8000</code>.
+        <h3 className="text-lg font-bold font-serif-title text-slate-900">Backend Service Unavailable</h3>
+        <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+          Unable to connect to OpenLibrary backend API ({error}). Ensure the FastAPI server is running on <code className="text-[#006699] font-mono bg-[#eef7fc] px-1.5 py-0.5 rounded border border-[#b8e0f5]">http://localhost:8000</code>.
         </p>
         {onRetry && (
           <button
             onClick={onRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#006699] hover:bg-[#005580] text-xs font-semibold text-white shadow-sm transition-colors"
           >
-            Retry Connection
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry Connection</span>
           </button>
         )}
       </div>
@@ -62,19 +63,19 @@ export default function BookGrid({
   // Empty Result State
   if (books.length === 0) {
     return (
-      <div className="glass-panel rounded-2xl p-12 text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500">
-          <BookX className="w-8 h-8" />
+      <div className="bg-white rounded-2xl p-12 text-center space-y-4 border border-[#e6e0d4] shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-[#f8f5f0] border border-[#d8cebe] flex items-center justify-center mx-auto text-slate-400">
+          <BookX className="w-8 h-8 text-[#006699]" />
         </div>
-        <h3 className="text-lg font-bold text-white">No books found</h3>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto">
-          No books match your current search query or filter criteria. Try adjusting your parameters or resetting filters.
+        <h3 className="text-lg font-bold font-serif-title text-slate-900">No books found in catalog</h3>
+        <p className="text-xs text-slate-600 max-w-sm mx-auto">
+          No catalog records match your current search query or filter parameters. Try adjusting your search term or resetting filters.
         </p>
         <button
           onClick={onResetFilters}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-lg transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#006699] hover:bg-[#005580] text-xs font-semibold text-white shadow-sm transition-colors"
         >
-          Reset Filters
+          Reset Catalog Filters
         </button>
       </div>
     );
@@ -89,3 +90,4 @@ export default function BookGrid({
     </div>
   );
 }
+

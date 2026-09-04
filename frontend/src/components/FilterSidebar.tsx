@@ -1,4 +1,4 @@
-import { SlidersHorizontal, RotateCcw, Filter } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 export interface FilterState {
   genre: string;
@@ -24,17 +24,17 @@ export default function FilterSidebar({
   onReset,
 }: FilterSidebarProps) {
   return (
-    <aside className="glass-panel rounded-2xl p-6 space-y-6 sticky top-24">
+    <aside className="bg-white rounded-2xl p-6 space-y-6 border border-[#e6e0d4] shadow-sm sticky top-24">
       
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-4 border-b border-[#eee8dc]">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-brand-400" />
-          <h3 className="font-bold text-white text-base">Filter Library</h3>
+          <SlidersHorizontal className="w-4 h-4 text-[#006699]" />
+          <h3 className="font-bold font-serif-title text-slate-800 text-base">Filter Catalog</h3>
         </div>
         <button
           onClick={onReset}
-          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+          className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#006699] transition-colors font-medium"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
@@ -42,16 +42,16 @@ export default function FilterSidebar({
       </div>
 
       {/* Genre Filter */}
-      <div className="space-y-3">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-          Genre / Category
+      <div className="space-y-2.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+          Genre / Subject
         </label>
         <select
           value={filters.genre}
           onChange={(e) => onFilterChange({ ...filters, genre: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+          className="w-full bg-[#faf8f5] border border-[#d8cebe] rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#006699] focus:ring-1 focus:ring-[#006699]"
         >
-          <option value="All">All Genres</option>
+          <option value="All">All Subjects & Genres</option>
           {genres.map((g) => (
             <option key={g} value={g}>
               {g}
@@ -61,11 +61,11 @@ export default function FilterSidebar({
       </div>
 
       {/* Difficulty Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-800">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-          Difficulty Level
+      <div className="space-y-2.5 pt-4 border-t border-[#eee8dc]">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+          Reading Level
         </label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
           {['All', 'Beginner', 'Intermediate', 'Advanced'].map((level) => {
             const isSelected = (level === 'All' && !filters.difficulty) || filters.difficulty === level;
             return (
@@ -77,10 +77,10 @@ export default function FilterSidebar({
                     difficulty: level === 'All' ? '' : level,
                   })
                 }
-                className={`px-2 py-1.5 rounded-lg text-[11px] font-medium border text-center transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium border text-center transition-all ${
                   isSelected
-                    ? 'bg-brand-600 text-white border-brand-500 shadow-md shadow-brand-500/20'
-                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    ? 'bg-[#006699] text-white border-[#005580] shadow-xs'
+                    : 'bg-[#faf8f5] text-slate-600 border-[#d8cebe] hover:border-slate-400 hover:text-slate-900'
                 }`}
               >
                 {level}
@@ -91,14 +91,14 @@ export default function FilterSidebar({
       </div>
 
       {/* Language Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-800">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+      <div className="space-y-2.5 pt-4 border-t border-[#eee8dc]">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
           Language
         </label>
         <select
           value={filters.language}
           onChange={(e) => onFilterChange({ ...filters, language: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+          className="w-full bg-[#faf8f5] border border-[#d8cebe] rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#006699] focus:ring-1 focus:ring-[#006699]"
         >
           <option value="All">All Languages</option>
           {languages.map((lang) => (
@@ -110,13 +110,13 @@ export default function FilterSidebar({
       </div>
 
       {/* Page Count Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-800">
+      <div className="space-y-2.5 pt-4 border-t border-[#eee8dc]">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Max Page Count
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+            Max Length
           </label>
-          <span className="text-xs font-bold text-brand-400">
-            {filters.maxPageCount < 700 ? `< ${filters.maxPageCount} p` : 'Any'}
+          <span className="text-xs font-bold text-[#006699]">
+            {filters.maxPageCount < 700 ? `< ${filters.maxPageCount} pages` : 'Any Length'}
           </span>
         </div>
         <input
@@ -126,7 +126,7 @@ export default function FilterSidebar({
           step="50"
           value={filters.maxPageCount}
           onChange={(e) => onFilterChange({ ...filters, maxPageCount: Number(e.target.value) })}
-          className="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+          className="w-full accent-[#006699] bg-[#e6e0d4] h-1.5 rounded-lg cursor-pointer"
         />
         <div className="flex justify-between text-[10px] text-slate-500 font-mono">
           <span>200 p</span>
@@ -136,12 +136,12 @@ export default function FilterSidebar({
       </div>
 
       {/* Publication Year Filter */}
-      <div className="space-y-3 pt-4 border-t border-slate-800">
+      <div className="space-y-2.5 pt-4 border-t border-[#eee8dc]">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-600">
             Published After
           </label>
-          <span className="text-xs font-bold text-brand-400">
+          <span className="text-xs font-bold text-[#006699]">
             {filters.minYear > 1930 ? `> ${filters.minYear}` : 'Any Year'}
           </span>
         </div>
@@ -152,7 +152,7 @@ export default function FilterSidebar({
           step="10"
           value={filters.minYear}
           onChange={(e) => onFilterChange({ ...filters, minYear: Number(e.target.value) })}
-          className="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+          className="w-full accent-[#006699] bg-[#e6e0d4] h-1.5 rounded-lg cursor-pointer"
         />
         <div className="flex justify-between text-[10px] text-slate-500 font-mono">
           <span>1930</span>
