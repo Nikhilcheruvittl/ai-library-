@@ -40,9 +40,10 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#eef7fc] text-[#006699] border border-[#b8e0f5] text-xs font-semibold">
             <Layers className="w-3.5 h-3.5 text-[#006699]" />
-            <span>Phase 1 — Catalog UI</span>
+            <span>Phase 2 — AI Search</span>
           </div>
         </div>
+
 
       </div>
     </header>

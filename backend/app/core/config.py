@@ -11,6 +11,11 @@ class Settings(BaseSettings):
         "postgresql://postgres:postgrespassword@localhost:5433/ai_library_db"
     )
 
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
+
+
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
 settings = Settings()
+

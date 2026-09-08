@@ -39,6 +39,11 @@ export interface ApiBookListResponse {
   items: ApiBook[];
 }
 
+export interface ApiAISearchResponse extends ApiBookListResponse {
+  intent: 'book_search' | 'conversation';
+  message?: string | null;
+}
+
 export interface BookFilterParams {
   search?: string;
   genre?: string;
@@ -126,3 +131,32 @@ export async function fetchGenres(): Promise<ApiGenre[]> {
 
   return response.json();
 }
+
+/**
+ * Execute AI Natural Language Book Search / Assistant query via POST /api/v1/ai/search using native fetch.
+ */
+export async function fetchAiSearch(query: string, limit: number = 12, offset: number = 0): Promise<ApiAISearchResponse> {
+  const response = await fetch(`${API_BASE_URL}/ai/search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+    body: JSON.stringify({ query: query.trim(), limit, offset }),
+  });
+
+  if (!response.ok) {
+    let errorDetail = `API Error: ${response.status} ${response.statusText}`;
+    try {
+      const errJson = await response.json();
+      if (errJson.detail) {
+        errorDetail = errJson.detail;
+      }
+    } catch (_) {}
+    throw new Error(errorDetail);
+  }
+
+  return response.json();
+}
+
+
