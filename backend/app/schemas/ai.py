@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Literal, List
+from app.schemas.book import BookSchema
 
 
 class NumericFilter(BaseModel):
@@ -40,8 +41,8 @@ class BookSearchRequest(BaseModel):
         description="Publication year filter specification with comparison operator and integer value."
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "search": "python programming",
                 "genre": "Programming",
@@ -51,6 +52,7 @@ class BookSearchRequest(BaseModel):
                 "publication_year": {"operator": "gt", "value": 2015}
             }
         }
+    )
 
 
 class AIAssistantIntentResponse(BaseModel):
@@ -69,11 +71,11 @@ class AIAssistantIntentResponse(BaseModel):
 
 
 class AISearchResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     intent: Literal["book_search", "conversation"] = Field(..., description="Intent classification: 'book_search' or 'conversation'")
     message: Optional[str] = Field(default=None, description="Conversational text answer if intent is conversation")
     total: int = Field(0, description="Total matching books count")
     limit: int = Field(12, description="Pagination limit")
     offset: int = Field(0, description="Pagination offset")
-    items: list = Field(default_factory=list, description="List of matching books")
-
-
+    items: List[BookSchema] = Field(default_factory=list, description="List of matching books")
