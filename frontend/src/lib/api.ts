@@ -55,7 +55,8 @@ export interface BookFilterParams {
   offset?: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production' ? '/api/v1' : 'http://localhost:8000/api/v1');
 
 /**
  * Fetch paginated & filtered list of books using native browser fetch API.
