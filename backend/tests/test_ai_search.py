@@ -219,7 +219,7 @@ class TestAISearchIntegration(unittest.TestCase):
     def test_parse_assistant_intent_gemini_success_with_sanitized_schema(self, mock_genai_client_class, mock_settings):
         """Test that parse_assistant_intent_gemini passes sanitized schema to Gemini and validates output."""
         mock_settings.GEMINI_API_KEY = "test_key"
-        mock_settings.GEMINI_MODEL = "gemini-2.5-flash"
+        mock_settings.GEMINI_MODEL = "gemini-3.6-flash"
 
         mock_client = mock_genai_client_class.return_value
         mock_response = mock_client.models.generate_content.return_value
@@ -247,7 +247,7 @@ class TestAISearchIntegration(unittest.TestCase):
         """Test that invalid data from Gemini (violating gt=0 constraint) is rejected by Pydantic post-validation."""
         from fastapi import HTTPException
         mock_settings.GEMINI_API_KEY = "test_key"
-        mock_settings.GEMINI_MODEL = "gemini-2.5-flash"
+        mock_settings.GEMINI_MODEL = "gemini-3.6-flash"
 
         mock_client = mock_genai_client_class.return_value
         mock_response = mock_client.models.generate_content.return_value

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
 
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
     AI_PROVIDER: str = os.getenv("AI_PROVIDER", "ollama")
 
 
