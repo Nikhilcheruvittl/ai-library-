@@ -40,6 +40,39 @@ SYSTEM_PROMPT = (
 )
 
 
+UNSUPPORTED_GEMINI_SCHEMA_KEYS = {
+    "exclusiveMinimum",
+    "exclusiveMaximum",
+    "minimum",
+    "maximum",
+    "minLength",
+    "maxLength",
+    "pattern",
+    "minItems",
+    "maxItems",
+    "uniqueItems",
+    "example",
+    "examples",
+}
+
+
+def sanitize_schema_for_gemini(schema):
+    """
+    Sanitize Pydantic JSON schema for Google Gemini structured output.
+    Gemini response_schema rejects validation keywords like exclusiveMinimum,
+    minimum, minLength, pattern, example, etc.
+    """
+    if isinstance(schema, dict):
+        return {
+            key: sanitize_schema_for_gemini(value)
+            for key, value in schema.items()
+            if key not in UNSUPPORTED_GEMINI_SCHEMA_KEYS
+        }
+    elif isinstance(schema, list):
+        return [sanitize_schema_for_gemini(item) for item in schema]
+    return schema
+
+
 def parse_assistant_intent_gemini(query_str: str) -> AIAssistantIntentResponse:
     """Parse intent using Google GenAI SDK (Gemini)."""
     if not settings.GEMINI_API_KEY:
@@ -53,12 +86,13 @@ def parse_assistant_intent_gemini(query_str: str) -> AIAssistantIntentResponse:
         from google.genai import types
 
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        response_schema = sanitize_schema_for_gemini(AIAssistantIntentResponse.model_json_schema())
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL,
             contents=f"{SYSTEM_PROMPT}\nQuery: \"{query_str}\"",
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_schema=AIAssistantIntentResponse,
+                response_schema=response_schema,
                 temperature=0.0,
             ),
         )

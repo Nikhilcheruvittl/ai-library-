@@ -6,7 +6,13 @@ from sqlalchemy.orm import sessionmaker
 from app.core.database import Base
 from app.models import Book, Author, Genre
 from app.schemas.ai import BookSearchRequest, NumericFilter, AIAssistantIntentResponse
-from app.api.v1.endpoints.ai import ai_search_books, AISearchInput, parse_assistant_intent
+from app.api.v1.endpoints.ai import (
+    ai_search_books,
+    AISearchInput,
+    parse_assistant_intent,
+    parse_assistant_intent_gemini,
+    sanitize_schema_for_gemini,
+)
 
 
 class TestAISearchIntegration(unittest.TestCase):
@@ -190,6 +196,69 @@ class TestAISearchIntegration(unittest.TestCase):
         with self.assertRaises(HTTPException) as ctx:
             parse_assistant_intent("Hello")
         self.assertEqual(ctx.exception.status_code, 503)
+
+    def test_sanitize_schema_for_gemini_removes_unsupported_numeric_constraints(self):
+        """Regression test: Ensure exclusiveMinimum and unsupported keywords are stripped from Gemini response schema."""
+        raw_schema = AIAssistantIntentResponse.model_json_schema()
+        
+        # Confirm raw schema contains exclusiveMinimum on NumericFilter.value
+        numeric_filter_raw = raw_schema["$defs"]["NumericFilter"]["properties"]["value"]
+        self.assertIn("exclusiveMinimum", numeric_filter_raw)
+        self.assertEqual(numeric_filter_raw["exclusiveMinimum"], 0)
+
+        sanitized_schema = sanitize_schema_for_gemini(raw_schema)
+        
+        # Confirm exclusiveMinimum and example are stripped
+        numeric_filter_sanitized = sanitized_schema["$defs"]["NumericFilter"]["properties"]["value"]
+        self.assertNotIn("exclusiveMinimum", numeric_filter_sanitized)
+        self.assertEqual(numeric_filter_sanitized["type"], "integer")
+        self.assertNotIn("example", sanitized_schema["$defs"]["BookSearchRequest"])
+
+    @patch("app.api.v1.endpoints.ai.settings")
+    @patch("google.genai.Client")
+    def test_parse_assistant_intent_gemini_success_with_sanitized_schema(self, mock_genai_client_class, mock_settings):
+        """Test that parse_assistant_intent_gemini passes sanitized schema to Gemini and validates output."""
+        mock_settings.GEMINI_API_KEY = "test_key"
+        mock_settings.GEMINI_MODEL = "gemini-2.5-flash"
+
+        mock_client = mock_genai_client_class.return_value
+        mock_response = mock_client.models.generate_content.return_value
+        mock_response.text = '{"intent": "book_search", "message": null, "book_search": {"page_count": {"operator": "lt", "value": 300}}}'
+
+        res = parse_assistant_intent_gemini("books under 300 pages")
+
+        self.assertEqual(res.intent, "book_search")
+        self.assertIsNotNone(res.book_search)
+        self.assertEqual(res.book_search.page_count.value, 300)
+
+        # Inspect call args sent to generate_content
+        mock_client.models.generate_content.assert_called_once()
+        call_kwargs = mock_client.models.generate_content.call_args.kwargs
+        config = call_kwargs["config"]
+        
+        # Verify schema passed to Gemini is sanitized (no exclusiveMinimum)
+        schema_passed = config.response_schema
+        self.assertIsInstance(schema_passed, dict)
+        self.assertNotIn("exclusiveMinimum", schema_passed["$defs"]["NumericFilter"]["properties"]["value"])
+
+    @patch("app.api.v1.endpoints.ai.settings")
+    @patch("google.genai.Client")
+    def test_parse_assistant_intent_gemini_invalid_data_fails_application_validation(self, mock_genai_client_class, mock_settings):
+        """Test that invalid data from Gemini (violating gt=0 constraint) is rejected by Pydantic post-validation."""
+        from fastapi import HTTPException
+        mock_settings.GEMINI_API_KEY = "test_key"
+        mock_settings.GEMINI_MODEL = "gemini-2.5-flash"
+
+        mock_client = mock_genai_client_class.return_value
+        mock_response = mock_client.models.generate_content.return_value
+        # value: 0 violates gt=0 application constraint on NumericFilter
+        mock_response.text = '{"intent": "book_search", "message": null, "book_search": {"page_count": {"operator": "lt", "value": 0}}}'
+
+        with self.assertRaises(HTTPException) as ctx:
+            parse_assistant_intent_gemini("books under 0 pages")
+        
+        self.assertEqual(ctx.exception.status_code, 502)
+        self.assertIn("AIAssistantIntentResponse schema", ctx.exception.detail)
 
 
 if __name__ == "__main__":
