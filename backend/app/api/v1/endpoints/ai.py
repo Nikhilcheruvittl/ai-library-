@@ -24,39 +24,69 @@ class AISearchInput(BaseModel):
     offset: int = Field(0, ge=0, description="Pagination offset (default 0)")
 
 
-def parse_assistant_intent(user_query: str) -> AIAssistantIntentResponse:
-    """
-    Classify user query into 'book_search' or 'conversation' using local Ollama LLM.
-    - For 'conversation': populates `message` with a natural-language answer.
-    - For 'book_search': populates `book_search` with structured `BookSearchRequest`.
-    """
-    query_str = user_query.strip()
-    if not query_str:
+SYSTEM_PROMPT = (
+    "You are OpenLibrary's AI Assistant. Classify the user's query as 'book_search' or 'conversation'.\n"
+    "Rules:\n"
+    "- If user wants to search, find, or filter books, set intent to 'book_search', fill the 'book_search' criteria object, and set 'message' to null.\n"
+    "  Allowed difficulty: Beginner, Intermediate, Advanced.\n"
+    "  Allowed genres: Programming, Cybersecurity, Technology, Science Fiction, History, Psychology, Business, Finance, Biography, Philosophy, Self-development, Fiction, Mystery, Fantasy.\n"
+    "  Numeric operators allowed for page_count and publication_year: lt, lte, gt, gte, eq.\n"
+    "  Examples:\n"
+    "  - 'under 300 pages' or 'fewer than 300 pages' -> page_count: {\"operator\": \"lt\", \"value\": 300}\n"
+    "  - 'up to 400 pages' or '400 pages or fewer' -> page_count: {\"operator\": \"lte\", \"value\": 400}\n"
+    "  - 'published after 2015' -> publication_year: {\"operator\": \"gt\", \"value\": 2015}\n"
+    "- If user is greeting, asking general questions, or chatting (e.g. 'Hi, how are you?', 'What is SQL injection?'), set intent to 'conversation', provide a clear answer in 'message', and set 'book_search' to null.\n"
+    "Output JSON strictly matching the schema with no explanation."
+)
+
+
+def parse_assistant_intent_gemini(query_str: str) -> AIAssistantIntentResponse:
+    """Parse intent using Google GenAI SDK (Gemini)."""
+    if not settings.GEMINI_API_KEY:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Search query cannot be empty."
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Gemini API key is not configured.",
         )
 
-    system_prompt = (
-        "You are OpenLibrary's AI Assistant. Classify the user's query as 'book_search' or 'conversation'.\n"
-        "Rules:\n"
-        "- If user wants to search, find, or filter books, set intent to 'book_search', fill the 'book_search' criteria object, and set 'message' to null.\n"
-        "  Allowed difficulty: Beginner, Intermediate, Advanced.\n"
-        "  Allowed genres: Programming, Cybersecurity, Technology, Science Fiction, History, Psychology, Business, Finance, Biography, Philosophy, Self-development, Fiction, Mystery, Fantasy.\n"
-        "  Numeric operators allowed for page_count and publication_year: lt, lte, gt, gte, eq.\n"
-        "  Examples:\n"
-        "  - 'under 300 pages' or 'fewer than 300 pages' -> page_count: {\"operator\": \"lt\", \"value\": 300}\n"
-        "  - 'up to 400 pages' or '400 pages or fewer' -> page_count: {\"operator\": \"lte\", \"value\": 400}\n"
-        "  - 'published after 2015' -> publication_year: {\"operator\": \"gt\", \"value\": 2015}\n"
-        "- If user is greeting, asking general questions, or chatting (e.g. 'Hi, how are you?', 'What is SQL injection?'), set intent to 'conversation', provide a clear answer in 'message', and set 'book_search' to null.\n"
-        "Output JSON strictly matching the schema with no explanation."
-    )
+    try:
+        from google import genai
+        from google.genai import types
 
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=f"{SYSTEM_PROMPT}\nQuery: \"{query_str}\"",
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=AIAssistantIntentResponse,
+                temperature=0.0,
+            ),
+        )
+        llm_output_raw = response.text or ""
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Gemini service request failed: {exc}",
+        )
+
+    try:
+        validated_response = AIAssistantIntentResponse.model_validate_json(llm_output_raw)
+        return validated_response
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"LLM output did not satisfy AIAssistantIntentResponse schema: {exc}",
+        )
+
+
+def parse_assistant_intent_ollama(query_str: str) -> AIAssistantIntentResponse:
+    """Parse intent using local Ollama service."""
     ollama_url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/generate"
 
     payload = {
         "model": settings.OLLAMA_MODEL,
-        "prompt": f"{system_prompt}\nQuery: \"{query_str}\"",
+        "prompt": f"{SYSTEM_PROMPT}\nQuery: \"{query_str}\"",
         "stream": False,
         "format": AIAssistantIntentResponse.model_json_schema(),
         "options": {
@@ -108,6 +138,26 @@ def parse_assistant_intent(user_query: str) -> AIAssistantIntentResponse:
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"LLM output did not satisfy AIAssistantIntentResponse schema: {exc}",
         )
+
+
+def parse_assistant_intent(user_query: str) -> AIAssistantIntentResponse:
+    """
+    Classify user query into 'book_search' or 'conversation' using configured AI provider (Gemini or Ollama).
+    - For 'conversation': populates `message` with a natural-language answer.
+    - For 'book_search': populates `book_search` with structured `BookSearchRequest`.
+    """
+    query_str = user_query.strip()
+    if not query_str:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Search query cannot be empty."
+        )
+
+    provider = (settings.AI_PROVIDER or "").lower()
+    if provider == "gemini":
+        return parse_assistant_intent_gemini(query_str)
+    return parse_assistant_intent_ollama(query_str)
+
 
 
 @router.post("/parse-search", response_model=BookSearchRequest, summary="Parse natural language request into structured search criteria")

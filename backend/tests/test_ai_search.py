@@ -167,7 +167,32 @@ class TestAISearchIntegration(unittest.TestCase):
         self.assertEqual(res["total"], 0)
         self.assertEqual(res["items"], [])
 
+    @patch("app.api.v1.endpoints.ai.settings")
+    @patch("app.api.v1.endpoints.ai.parse_assistant_intent_gemini")
+    def test_provider_dispatch_gemini(self, mock_gemini, mock_settings):
+        """Test that setting AI_PROVIDER='gemini' dispatches to parse_assistant_intent_gemini."""
+        mock_settings.AI_PROVIDER = "gemini"
+        mock_settings.GEMINI_API_KEY = "test_key"
+        mock_gemini.return_value = AIAssistantIntentResponse(intent="conversation", message="Gemini response")
+
+        res = parse_assistant_intent("Hello Gemini")
+        self.assertEqual(res.intent, "conversation")
+        self.assertEqual(res.message, "Gemini response")
+        mock_gemini.assert_called_once_with("Hello Gemini")
+
+    @patch("app.api.v1.endpoints.ai.settings")
+    def test_gemini_missing_api_key_raises_503(self, mock_settings):
+        """Test that missing GEMINI_API_KEY raises HTTP 503."""
+        from fastapi import HTTPException
+        mock_settings.AI_PROVIDER = "gemini"
+        mock_settings.GEMINI_API_KEY = None
+
+        with self.assertRaises(HTTPException) as ctx:
+            parse_assistant_intent("Hello")
+        self.assertEqual(ctx.exception.status_code, 503)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
